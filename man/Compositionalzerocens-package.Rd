@@ -14,7 +14,7 @@ Modelling Zero Values in Compositional Data Using a Censored Model.
 Package: \tab Compositionalzerocens\cr
 Type: \tab Package\cr
 Version: \tab 1.0 \cr
-Date: \tab 2026-07-28 \cr
+Date: \tab 2026-07-29 \cr
 }
 }
 
