@@ -1,0 +1,65 @@
+rzerocens <- function(n, mu, sigma) {
+
+  D <- dim(sigma)[1] + 1
+  setup <- .precompute_faces(D)
+  tH <- t( setup$H )
+  faces <- setup$faces
+  X <- matrix(nrow = n, ncol = D)
+  is_zero <- logical(n)   # TRUE if the row is a boundary/censored point
+
+  for ( i in 1:n ) {
+    repeat {
+      y <- as.numeric( Rfast::rmvnorm(1, mu, sigma) )
+      x_cand <- as.numeric( .inv_alpha_transform(y, tH) )
+      neg <- which(x_cand < 0)
+      if (length(neg) <= 1) break   # accept: interior (0) or single escape (1)
+      # length(neg) > 1: unsupported by the model, redraw
+    }
+
+    if ( length(neg) == 0 ) {
+      X[i, ] <- x_cand
+      is_zero[i] <- FALSE
+    } else {
+      j <- neg
+      Bj  <- faces[[ j ]]$B
+      c1j <- faces[[ j ]]$c1
+      z <- Bj %*% y
+      z[1] <- c1j
+      y_prime <- t(Bj) %*% z
+      x <- as.numeric( .inv_alpha_transform( as.numeric(y_prime), tH ) )
+      x[j] <- 0
+      X[i, ] <- x
+      is_zero[i] <- TRUE
+    }
+  }
+
+  X
+}
+
+
+
+.inv_alpha_transform <- function(y, tH) {
+  z <- ( tH %*% y + 1)
+  z / sum(z)
+}
+
+.gram_schmidt <- function(v) {
+  d <- length(v)
+  M <- cbind( v, diag(d) )
+  Q <- qr.Q(qr(M))
+  if ( sum(Q[, 1] * v) < 0 )  Q[, 1] <-  -Q[, 1]
+  t(Q)
+}
+
+.precompute_faces <- function(D) {
+  H <- Compositional::helm(D)
+  faces <- vector("list", D)
+  for ( j in 1:D ) {
+    v_j <- D * H[, j]
+    B_j <- .gram_schmidt(v_j)
+    c1_j <-  -D / sqrt(sum(v_j^2))
+    faces[[ j ]] <- list(B = B_j, c1 = c1_j)
+  }
+  list(H = H, faces = faces)
+}
+
