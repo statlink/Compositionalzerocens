@@ -1,9 +1,9 @@
 {
     "id": "499BC02C",
-    "path": "~/GitHub/Compositionalzerocens/R/prob.cens.R",
-    "project_path": "R/prob.cens.R",
+    "path": "~/GitHub/Compositionalzerocens/R/prob.zerocens.R",
+    "project_path": "R/prob.zerocens.R",
     "type": "r_source",
-    "hash": "3725799548",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1785752054786.0,
@@ -13,15 +13,15 @@
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "0,5",
+        "cursorPosition": "0,9",
         "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1785752389,
+    "lastKnownWriteTime": 1785753321,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1785752389,
+    "last_content_update": 1785753321376,
     "read_only": false,
     "read_only_alternatives": []
 }
