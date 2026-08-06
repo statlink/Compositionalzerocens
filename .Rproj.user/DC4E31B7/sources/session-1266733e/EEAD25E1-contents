@@ -1,0 +1,77 @@
+dzerocens <- function(x, mu, sigma, logdens = FALSE) {
+
+  if ( !is.matrix(x) )  x <- matrix(x, nrow = 1)   
+
+  n <- dim(x)[1]    
+  D <- dim(x)[2]  ;  d  <- D - 1
+  e1 <- c(1, rep(0, d - 1))
+  f <- numeric(n)
+  con1 <- (d - 1) * log(2 * pi)  ## n2
+  con2 <- d * log(2 * pi)  ## n1
+
+  z <- Compositional::alfa(x, 1)$aff 
+  ind <- which( Rfast::rowsums(x == 0) == 0 )
+  
+  if ( length(ind) > 0  &  length(ind) < n ) {
+    y1 <- z[ind, , drop = FALSE]
+    w2 <- z[-ind, , drop = FALSE]
+    n2 <- dim(w2)[1]
+    a_vec <- sqrt( Rfast::rowsums(w2^2) )
+    B_list <- vector("list", n2)
+    for ( j in 1:n2 )  B_list[[ j ]] <- far::orthonormalization(cbind(w2[j, ], e1))
+
+    se_inv <- solve(sigma)
+    log_det_se <- as.numeric( determinant(sigma, logarithm = TRUE)$modulus )
+
+    f[ind] <-  - 0.5 * log_det_se - 0.5 * Rfast::mahala(y1, mu, Sigma) - 0.5 * con2 + (d + 0.5) * log(D)
+    lam <- numeric(n2)
+
+    for ( j in 1:n2 ) {
+      B <- B_list[[ j ]]                 # <-- reused, not recomputed
+      a <- a_vec[j]
+      mt <- mu %*% B
+      ts <- crossprod(B, Sigma) %*% B
+      my <- mt[-1]  ;  s12 <- ts[1, -1]  ;  s22 <- ts[-1, -1]
+      s22inv <- solve(s22)
+      com <- s12 %*% s22inv
+      mx <- as.numeric(mt[1] - com %*% my)
+      sx <- as.numeric(ts[1, 1] - com %*% s12)
+      lam[j] <-  -0.5 * as.numeric( determinant(as.matrix(s22), logarithm = TRUE)$modulus ) -
+                  0.5 * my %*% s22inv %*% my + pnorm(a, mx, sqrt(sx), lower.tail = FALSE, log.p = TRUE)
+    }
+    f[-ind] <- lam - 0.5 * con1 + (d + 0.5) * log(D)
+
+  } else if ( length(ind) == n ) {
+    y1 <- z
+    se_inv <- solve(sigma)
+    log_det_se <- as.numeric( determinant(sigma, logarithm = TRUE)$modulus )
+    f <-  - 0.5 * log_det_se - 0.5 * Rfast::mahala(y1, mu, Sigma) - 0.5 * con2 + (d + 0.5) * log(D)
+
+  } else if ( length(ind) == 0 ) {
+    w2 <- z
+    a_vec <- sqrt( Rfast::rowsums(w2^2) )
+    B_list <- vector("list", n2)
+    for ( j in 1:n2 )  B_list[[ j ]] <- far::orthonormalization(cbind(w2[j, ], e1))
+    lam <- numeric(n2)
+
+    for ( j in 1:n2 ) {
+      B <- B_list[[ j ]]                 # <-- reused, not recomputed
+      a <- a_vec[j]
+      mt <- mu %*% B
+      ts <- crossprod(B, Sigma) %*% B
+      my <- mt[-1]  ;  s12 <- ts[1, -1]  ;  s22 <- ts[-1, -1]
+      s22inv <- solve(s22)
+      com <- s12 %*% s22inv
+      mx <- as.numeric(mt[1] - com %*% my)
+      sx <- as.numeric(ts[1, 1] - com %*% s12)
+      lam[j] <-  -0.5 * as.numeric( determinant(as.matrix(s22), logarithm = TRUE)$modulus ) -
+                  0.5 * my %*% s22inv %*% my + pnorm(a, mx, sqrt(sx), lower.tail = FALSE, log.p = TRUE)
+    }
+    f <- lam - 0.5 * con1 + (d + 0.5) * log(D)
+
+  }
+
+
+  if ( !logdens )  f <- exp(f)
+  f
+}
