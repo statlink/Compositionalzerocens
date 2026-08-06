@@ -26,7 +26,7 @@ zerocens.em <- function(x, tol = 1e-6, maxit = 1000) {
     m1 <-  - 0.5 * n1 * log_det_se - 0.5 * sum( Rfast::mahala(y1, mu, Sigma) )
     lam <- numeric(n2)
     for ( j in 1:n2 ) {
-      B <- B_list[[ j ]]                 # <-- reused, not recomputed
+      B <- B_list[[ j ]]                 
       a <- a_vec[j]
       mt <- mu %*% B
       ts <- crossprod(B, Sigma) %*% B
