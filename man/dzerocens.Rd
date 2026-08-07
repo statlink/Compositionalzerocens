@@ -2,11 +2,11 @@
 \alias{dzerocens}
 
 \title{
-Density of of the zero-censored model
+Density of the zero-censored model
 }
 
 \description{
-Density of of the zero-censored model.
+Density of the zero-censored model.
 }
 
 \usage{
