@@ -1,0 +1,10 @@
+#useDynLib(MXM, .registration = TRUE)
+
+importFrom("stats", cov, pnorm, dnorm, nlm, optim)
+importFrom("Compositional", alfa, helm)
+importFrom("Rfast", colmeans, rmvnorm, mahala, rowsums)
+importFrom("far", orthonormalization)
+importFrom("TruncatedNormal", pmvnorm)
+
+exportPattern("^[[:alpha:]]+")
+exportPattern("^[^\\.]")
