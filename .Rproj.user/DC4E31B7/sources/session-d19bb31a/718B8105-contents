@@ -10,7 +10,7 @@ Estimation of the zero-censoring probability.
 }
 
 \usage{
-prob.zerocens(mu, sigma, theoretical = TRUE, nsim = 1e+6)
+prob.zerocens(mu, sigma, theoretical = TRUE, n = 1e+6)
 }
 
 \arguments{
@@ -20,20 +20,17 @@ The mean vector in \eqn{R^{D-1}}.
 \item{sigma}{
 The covariance matrix in \eqn{R^{D-1}}.
 }
-\item{B}{
-Thew number of samples to generate for the parametric bootstrap.
-}
 \item{theoretical}{
 Do you want the theoretical probability?
 }
-\item{nsim}{
+\item{n}{
 The number of draws to use in the Monte Carlo estimation of the zero-censoring probability.
 }
 }
 
 \details{
-The function performs a goodness--of--fit test for the zero-censored model via a simulated
-\eqn{\chi^2} test using parametric bootstrap (Tsagris and Alharbi, 2026).
+The function computes the probability of a zero-censoring, in either face of the simplex,
+using Monte-Carlo (Tsagris, 2026).
 }
 
 \value{
@@ -41,7 +38,7 @@ The (theoretical) probability of zero-censoring at each component.
 }
 
 \references{
-Tsagris M. and Alharbi N. (2026). Modelling structural zeros in compositional data via
+Tsagris M. (2026). Modelling structural zeros in compositional data via
 a zero-censored multivariate normal model.
 
 https://arxiv.org/pdf/2208.13073

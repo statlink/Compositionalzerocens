@@ -1,16 +1,16 @@
-\name{prob.zerocens}
-\alias{prob.zerocens}
+\name{gof.zerocens}
+\alias{gof.zerocens}
 
 \title{
-Estimation of the zero-censoring probability
+Goodness--of--fit test for the zero-censored model
 }
 
 \description{
-Estimation of the zero-censoring probability.
+Goodness--of--fit test for the zero-censored model.
 }
 
 \usage{
-prob.zerocens(mu, sigma, theoretical = TRUE, nsim = 1e+6)
+gof.zerocens(mu, sigma, B = 999, theoretical = TRUE, nsim = 1e+6)
 }
 
 \arguments{
@@ -20,20 +20,17 @@ The mean vector in \eqn{R^{D-1}}.
 \item{sigma}{
 The covariance matrix in \eqn{R^{D-1}}.
 }
-\item{B}{
-Thew number of samples to generate for the parametric bootstrap.
-}
 \item{theoretical}{
 Do you want the theoretical probability?
 }
-\item{nsim}{
+\item{n}{
 The number of draws to use in the Monte Carlo estimation of the zero-censoring probability.
 }
 }
 
 \details{
-The function performs a goodness--of--fit test for the zero-censored model via a simulated
-\eqn{\chi^2} test using parametric bootstrap (Tsagris and Alharbi, 2026).
+The function computes the probability of a zero-censoring, in either face of the simplex,
+using Monte-Carlo (Tsagris and Alharbi, 2026).
 }
 
 \value{
