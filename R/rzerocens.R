@@ -1,4 +1,4 @@
-rzerocens <- function(n, mu, sigma) {
+rzerocens <- function(n, mu, sigma, tol = 1e-8) {
 
   D <- dim(sigma)[1] + 1
   setup <- .precompute_faces(D)
@@ -8,34 +8,36 @@ rzerocens <- function(n, mu, sigma) {
   is_zero <- logical(n)   # TRUE if the row is a boundary/censored point
 
   for ( i in 1:n ) {
+    tries <- 0
     repeat {
+      tries <- tries + 1
       y <- as.numeric( Rfast::rmvnorm(1, mu, sigma) )
       x_cand <- as.numeric( .inv_alpha_transform(y, tH) )
       neg <- which(x_cand < 0)
-      if (length(neg) <= 1) break   # accept: interior (0) or single escape (1)
-      # length(neg) > 1: unsupported by the model, redraw
-    }
+      if ( length(neg) > 1 ) next   # raw draw violates >1 facet: unsupported, redraw
 
-    if ( length(neg) == 0 ) {
-      X[i, ] <- x_cand
-      is_zero[i] <- FALSE
-    } else {
-      j <- neg
-      Bj  <- faces[[ j ]]$B
-      c1j <- faces[[ j ]]$c1
-      z <- Bj %*% y
-      z[1] <- c1j
-      y_prime <- t(Bj) %*% z
-      x <- as.numeric( .inv_alpha_transform( as.numeric(y_prime), tH ) )
-      x[j] <- 0
-      X[i, ] <- x
-      is_zero[i] <- TRUE
+      if ( length(neg) == 0 ) {
+        x <- x_cand
+      } else {
+        j <- neg
+        Bj  <- faces[[ j ]]$B
+        c1j <- faces[[ j ]]$c1
+        z <- Bj %*% y
+        z[1] <- c1j
+        y_prime <- t(Bj) %*% z
+        x <- as.numeric( .inv_alpha_transform( as.numeric(y_prime), tH ) )
+        x[j] <- 0
+        if ( any(x[-j] < 0) ) next
+      }
+      break   # got a valid row (interior or exactly one clean zero)
     }
+    x[ x < 0 & x > -tol ] <- 0
+    X[i, ] <- x
+    is_zero[i] <- ( length(neg) == 1 )
   }
 
   X
 }
-
 
 
 .inv_alpha_transform <- function(y, tH) {
@@ -62,4 +64,3 @@ rzerocens <- function(n, mu, sigma) {
   }
   list(H = H, faces = faces)
 }
-
