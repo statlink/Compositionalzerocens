@@ -1,12 +1,12 @@
 gof.zerocens <- function(x, mu, sigma, B = 999, nsim = 1e+6) {
 
-    n <- dim(x)[1]  ;  D <- dim(x)[2]
-    neg <- x == 0
-    n_neg <- Rfast::rowsums(neg)
-    obs_counts <- c(sum(n_neg == 0), Rfast::colsums(neg))
-    p_hat <- Compositionalzerocens::prob.zerocens(mu, sigma, theoretical = FALSE, nsim = nsim)
-    E <- n * c(1 - sum(p_hat), p_hat)
-    X2_obs <- 2 * sum( obs_counts * log(obs_counts / E), na.rm = TRUE )
+  n <- dim(x)[1]  ;  D <- dim(x)[2]
+  neg <- x == 0
+  n_neg <- Rfast::rowsums(neg)
+  obs_counts <- c(sum(n_neg == 0), Rfast::colsums(neg))
+  p_hat <- Compositionalzerocens::prob.zerocens(mu, sigma, theoretical = FALSE, nsim = nsim)
+  E <- n * c(1 - sum(p_hat), p_hat)
+  X2_obs <- 2 * sum( obs_counts * log(obs_counts / E), na.rm = TRUE )
 
     X2_sim <- numeric(B)
     for ( b in 1:B ) {
