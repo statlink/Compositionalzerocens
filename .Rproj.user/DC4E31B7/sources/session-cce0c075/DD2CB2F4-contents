@@ -1,0 +1,22 @@
+prob.zerocens <- function(mu, sigma, theoretical = FALSE, nsim = 1e+6) {
+
+  D <- length(mu) + 1
+   if ( theoretical ) {
+     H <- Compositional::helm(D)
+     prob <- sapply(1:D, function(j) {
+       h_j <- H[, j]
+       nrm <- sqrt(sum(h_j^2))
+       n_j <- h_j / nrm
+       c_j <- -1 / nrm
+       m_j <- sum(n_j * mu)
+       v_j <- as.numeric( t(n_j) %*% sigma %*% n_j )
+       pnorm((c_j - m_j) / sqrt(v_j))
+     })
+
+   } else {
+     x <- Compositionalzerocens::rzerocens(nsim, mu, sigma)
+     prob <- Rfast::colmeans(x == 0)
+   }
+   names(prob) <- paste("X", 1:D, sep = "")
+   prob
+}
