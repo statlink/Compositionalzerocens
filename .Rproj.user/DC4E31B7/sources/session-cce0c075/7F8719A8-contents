@@ -1,30 +1,38 @@
-gof.zerocens <- function(x, mu, sigma, B = 999, nsim = 1e+6) {
+gof.zerocens <- function(x, mu, sigma, B = 999, nsim = 1e6) {
 
   n <- dim(x)[1]  ;  D <- dim(x)[2]
-  neg <- x == 0
+  neg   <- x == 0
   n_neg <- Rfast::rowsums(neg)
   obs_counts <- c(sum(n_neg == 0), Rfast::colsums(neg))
   p_hat <- Compositionalzerocens::prob.zerocens(mu, sigma, theoretical = FALSE, nsim = nsim)
   E <- n * c(1 - sum(p_hat), p_hat)
   X2_obs <- 2 * sum( obs_counts * log(obs_counts / E), na.rm = TRUE )
-
-    X2_sim <- numeric(B)
-    for ( b in 1:B ) {
-      y_b <- Compositionalzerocens::rzerocens(n, mu, sigma)
-      sum0 <- sum(y_b == 0)
-      while ( sum0 == 0 ) {
-        y_b <- Compositionalzerocens::rzerocens(n, mu, sigma)
-        sum0 <- sum(y_b == 0)
-      }
-      fit_b <- Compositionalzerocens::zerocens.em(y_b)   # refit on y_b
-      mu_b <- fit_b$mu
-      sigma_b <- fit_b$sigma
-      p_hat_b <- Compositionalzerocens::prob.zerocens(mu_b, sigma_b, theoretical = FALSE, nsim = nsim)
-      E_b <- n * c(1 - sum(p_hat_b), p_hat_b)
-      neg_b <- y_b == 0
-      counts_b <- c(sum(Rfast::rowsums(neg_b) == 0), Rfast::colsums(neg_b))
-      X2_sim[b] <- 2 * sum( counts_b * log(counts_b / E_b), na.rm = TRUE )
-    }
-
-    ( sum(X2_sim >= X2_obs, na.rm = TRUE) + 1 ) / ( sum( !is.na(X2_sim) ) + 1)
+  fit_yb <- function(y_b) {
+    neg_b <- y_b == 0
+    if ( sum(neg_b) == 0 ) {
+      Y_b <- Compositional::alfa(y_b, 1)$aff
+      list(mu = Rfast::colmeans(Y_b), sigma = cov(Y_b) * (n - 1) / n )
+    } else   Compositionalzerocens::zerocens.em(y_b)
   }
+  X2_sim <- numeric(B)
+
+  for ( b in 1:B ) {
+    fit_b <- NULL
+    tries <- 0
+    while ( is.null(fit_b) && tries < 50 ) {
+      tries <- tries + 1
+      y_b <- Compositionalzerocens::rzerocens(n, mu, sigma)   # always accepted as-is
+      fit_b <- tryCatch(fit_yb(y_b), error = function(e) NULL)
+    }
+    if ( is.null(fit_b) ) next
+    mu_b <- fit_b$mu
+    sigma_b <- fit_b$sigma
+    p_hat_b <- Compositionalzerocens::prob.zerocens(mu_b, sigma_b, theoretical = FALSE, nsim = nsim)
+    E_b <- n * c(1 - sum(p_hat_b), p_hat_b)
+    neg_b <- y_b == 0
+    counts_b <- c(sum(Rfast::rowsums(neg_b) == 0), Rfast::colsums(neg_b))
+    X2_sim[b] <- 2 * sum( counts_b * log(counts_b / E_b), na.rm = TRUE )
+  }
+
+  ( sum(X2_sim >= X2_obs, na.rm = TRUE) + 1 ) / ( sum(!is.na(X2_sim)) + 1 )
+}
